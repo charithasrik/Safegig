@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SafeGig - Student Job Protection Hub{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('public.index') }}" class="nav-logo">SafeGig</a>
+            <div class="nav-links">
+                {% if not current_user.is_authenticated or current_user.role == 'student' or current_user.role == 'admin' %}
+                <a href="{{ url_for('public.articles') }}" class="nav-link" style="margin-right: 1rem;">Educational Hub</a>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+                    <span class="nav-user" style="margin-right: 1rem;">Hello, {{ current_user.username }}</span>
+                    <a href="{{ url_for(current_user.role + '.dashboard') }}" class="nav-link">Dashboard</a>
+                    {% if current_user.role == 'student' %}
+                    <a href="{{ url_for('student.saved_jobs') }}" class="nav-link" style="margin-right: 1rem;">Saved Jobs</a>
+                    <a href="{{ url_for('student.my_applications') }}" class="nav-link" style="margin-right: 1rem;">My Applications</a>
+                    {% endif %}
+                    {% if current_user.role == 'employer' %}
+                    <a href="{{ url_for('employer.profile') }}" class="nav-link" style="margin-right: 1rem;">Company Profile</a>
+                    {% endif %}
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin.view_users') }}" class="nav-link" style="margin-right: 1rem;">All Users</a>
+                    <a href="{{ url_for('admin.view_applications') }}" class="nav-link" style="margin-right: 1rem;">All Applications</a>
+                    <a href="{{ url_for('admin.manage_articles') }}" class="nav-link" style="margin-right: 1rem;">Manage Articles</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Register</a>
+                {% endif %}
+                <button id="theme-toggle" title="Toggle Dark/Light Mode">🌙</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+        <p>&copy; 2026 SafeGig - Student Job Protection Hub</p>
+    </footer>
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        themeToggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+        themeToggleBtn.addEventListener('click', () => {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggleBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Global Form Submission Loading Indicator
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            
+            // Allow form to submit, but change button state immediately after
+            // setTimeout ensures the click event and any values are properly registered before disabling
+            setTimeout(() => {
+                submitBtns.forEach(btn => {
+                    if (!btn.disabled) {
+                        if (!btn.dataset.originalText) {
+                            btn.dataset.originalText = btn.innerHTML || btn.value;
+                        }
+                        btn.style.opacity = '0.7';
+                        btn.style.cursor = 'not-allowed';
+                        
+                        // Prevent changing the text if it contains specific icons/badges that might break layout
+                        // Keep it simple and universally applied
+                        if (btn.tagName.toLowerCase() === 'button') {
+                            btn.innerHTML = 'Processing... ⏳';
+                        } else {
+                            btn.value = 'Processing... ⏳';
+                        }
+                        
+                        // Note: Actually disabling the button breaks some form action logic if the button's name/value is required. 
+                        // Instead, we just apply pointer-events: none to achieve the same UX effect safely.
+                        btn.style.pointerEvents = 'none';
+                    }
+                });
+            }, 10);
+        });
+    </script>
+</body>
+</html>

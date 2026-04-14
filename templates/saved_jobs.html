@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Saved Jobs - SafeGig{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h2>Saved Jobs</h2>
+        <a href="{{ url_for('student.dashboard') }}" style="color: var(--primary-color); text-decoration: none;">&larr; Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="list-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 3rem;">
+    {% if saved_jobs %}
+        {% for job in saved_jobs %}
+        <div class="job-row modern-card fade-in" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-left: 4px solid var(--secondary-color); flex-wrap: wrap; gap: 1rem; background: var(--background);">
+            <div style="flex: 2; min-width: 250px;">
+                <h4 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: var(--text-main);">{{ job['title'] }}</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                    <a href="{{ url_for('public.view_employer', employer_id=job['employer_id']) }}" style="color: var(--secondary-color); text-decoration: none; font-weight: 500;">{{ job['company_name'] }}</a>
+                    {% if 'location' in job.keys() and job['location'] %} • 📍 {{ job['location'] }}{% endif %}
+                    {% if 'stipend' in job.keys() and job['stipend'] %} • 💰 {{ job['stipend'] }}{% endif %}
+                </p>
+            </div>
+            
+            <div style="flex: 1; text-align: right; min-width: 200px; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <a href="{{ url_for('student.job_detail', job_id=job['id']) }}" class="btn btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 99px;">View Job &rarr;</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 1rem;">
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;">You haven't saved any jobs yet.</p>
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Browse Jobs</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

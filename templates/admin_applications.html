@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}All Applications - SafeGig Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h2>Platform Applications</h2>
+    <p style="color: var(--text-muted);">Overview of all student job applications.</p>
+</div>
+
+<div class="card">
+    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 1rem;">Date</th>
+                <th style="padding: 1rem;">Student</th>
+                <th style="padding: 1rem;">Job Title</th>
+                <th style="padding: 1rem;">Company</th>
+                <th style="padding: 1rem;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 1rem;">{{ app['application_date'] }}</td>
+                <td style="padding: 1rem;">{{ app['student_name'] }}</td>
+                <td style="padding: 1rem;">{{ app['job_title'] }}</td>
+                <td style="padding: 1rem;">{{ app['company_name'] or 'N/A' }}</td>
+                <td style="padding: 1rem;">
+                    <span class="badge {% if app.status == 'hired' %}badge-success{% elif app.status == 'rejected' %}badge-danger{% else %}badge-pending{% endif %}">
+                        {{ app['status']|title }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="padding: 1rem; text-align: center;">No applications found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+</style>
+{% endblock %}

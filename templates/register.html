@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Register - SafeGig{% endblock %}
+
+{% block content %}
+<div class="form-container" style="margin-top: 4rem;">
+    <h2 style="margin-bottom: 1.5rem; text-align: center;">Join SafeGig</h2>
+    <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+            <div class="password-strength-container">
+                <div id="password-strength-bar" class="password-strength-bar"></div>
+            </div>
+            <div id="password-strength-text" class="password-strength-text"></div>
+        </div>
+        <div class="form-group">
+            <label for="role">I am a...</label>
+            <select id="role" name="role" class="form-control" required>
+                <option value="student">Student (Looking for Jobs)</option>
+                <option value="employer">Employer (Posting Jobs)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+    </form>
+    <p style="text-align: center; margin-top: 1.5rem;">
+        Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a>
+    </p>
+</div>
+
+<script>
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('password-strength-bar');
+    const strengthText = document.getElementById('password-strength-text');
+
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        
+        if (password.length > 0) {
+            if (password.length >= 8) strength += 1;
+            if (password.match(/[a-z]+/)) strength += 1;
+            if (password.match(/[A-Z]+/)) strength += 1;
+            if (password.match(/[0-9]+/)) strength += 1;
+            if (password.match(/[^a-zA-Z0-9]+/)) strength += 1;
+        }
+
+        let width = '0%';
+        let color = 'var(--border-color)';
+        let text = '';
+
+        if (password.length === 0) {
+            strengthBar.style.width = '0%';
+            strengthText.textContent = '';
+            return;
+        }
+
+        switch (strength) {
+            case 0:
+            case 1:
+            case 2:
+                width = '33%';
+                color = 'var(--danger)';
+                text = 'Weak';
+                break;
+            case 3:
+            case 4:
+                width = '66%';
+                color = 'var(--warning)';
+                text = 'Medium';
+                break;
+            case 5:
+                width = '100%';
+                color = 'var(--success)';
+                text = 'Strong';
+                break;
+        }
+
+        strengthBar.style.width = width;
+        strengthBar.style.backgroundColor = color;
+        strengthText.textContent = text;
+        strengthText.style.color = color;
+    });
+</script>
+{% endblock %}

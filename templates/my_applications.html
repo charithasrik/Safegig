@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}My Applications - SafeGig{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h2>My Applications</h2>
+        <a href="{{ url_for('student.dashboard') }}" style="color: var(--primary-color); text-decoration: none;">&larr; Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="card-grid" style="display: grid; gap: 1.5rem; margin-bottom: 3rem;">
+    {% if applications %}
+        {% for app in applications %}
+        <div class="job-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid var(--primary-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem;">{{ app['title'] }}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;"><a href="{{ url_for('public.view_employer', employer_id=app['employer_id']) }}" style="color: var(--primary-color); text-decoration: none;">{{ app['company_name'] }}</a></p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; background: var(--background); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; text-transform: capitalize; margin-bottom: 0.5rem;">Status: {{ app['status'] }}</span><br>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">Applied: {{ (app['application_date'] | string)[:10] }}</span>
+                </div>
+            </div>
+            
+            <div style="background: var(--background); padding: 1rem; border-radius: 0.5rem;">
+                <p style="font-size: 0.875rem; margin-bottom: 0.5rem;"><strong>Your Provided Details:</strong></p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.875rem;">
+                    <div>
+                        <p style="color: var(--text-muted); margin-bottom: 0.25rem;">Availability</p>
+                        <p>{{ app['availability'] or 'N/A' }}</p>
+                    </div>
+                    <div>
+                        <p style="color: var(--text-muted); margin-bottom: 0.25rem;">Start Date</p>
+                        <p>{{ app['start_date'] or 'N/A' }}</p>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <p style="color: var(--text-muted); margin-bottom: 0.25rem;">Previous Experience</p>
+                        <p style="white-space: pre-wrap;">{{ app['previous_experience'] or 'None' }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem;">
+                <a href="{{ url_for('student.job_detail', job_id=app['job_id']) }}" class="btn btn-secondary" style="font-size: 0.875rem;">View Original Job Posting</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 1rem; grid-column: 1 / -1;">
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;">You haven't applied to any jobs yet.</p>
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Browse Jobs</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

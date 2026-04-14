@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}All Users - SafeGig Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h2>Platform Users</h2>
+    <p style="color: var(--text-muted);">Overview of all students and employers.</p>
+</div>
+
+<div class="card" style="margin-bottom: 3rem;">
+    <h3>Students</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 1rem;">Username</th>
+                <th style="padding: 1rem;">Email</th>
+                <th style="padding: 1rem;">Joined</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 1rem;">{{ student['username'] }}</td>
+                <td style="padding: 1rem;">{{ student['email'] }}</td>
+                <td style="padding: 1rem;">{{ student['created_at'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" style="padding: 1rem; text-align: center;">No students found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Employers</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 1rem;">Company Name</th>
+                <th style="padding: 1rem;">Username</th>
+                <th style="padding: 1rem;">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employer in employers %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 1rem;">{{ employer['company_name'] or 'N/A' }}</td>
+                <td style="padding: 1rem;">{{ employer['username'] }}</td>
+                <td style="padding: 1rem;">{{ employer['email'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" style="padding: 1rem; text-align: center;">No employers found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

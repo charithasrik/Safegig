@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Employer Dashboard - SafeGig{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+    <div>
+        <h2 style="margin-bottom: 0.25rem; font-size: 2rem;">Employer Dashboard</h2>
+        <p style="color: var(--text-muted); margin: 0;">Manage your active job postings and applicants.</p>
+    </div>
+    <a href="{{ url_for('employer.post_job') }}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-weight: 600;">+ Post New Job</a>
+</div>
+
+<div class="dashboard-section" style="margin-bottom: 4rem;">
+    <div class="list-container">
+        {% if jobs %}
+            {% for job in jobs %}
+            <div class="job-row modern-card fade-in" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; margin-bottom: 1rem; border-left: 4px solid {% if job['status'] == 'verified' %}var(--success){% elif job['status'] == 'rejected' %}var(--danger){% else %}var(--warning){% endif %}; flex-wrap: wrap; gap: 1rem;">
+                <!-- Column 1: Info -->
+                <div style="flex: 2; min-width: 300px;">
+                    <h4 style="margin: 0 0 0.25rem 0; font-size: 1.15rem; color: var(--text-main);">{{ job['title'] }}</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Posted on: {{ (job['created_at'] | string)[:10] }}</p>
+                </div>
+                
+                <!-- Column 2: Status -->
+                <div style="flex: 1; min-width: 150px; text-align: center;">
+                    <span class="badge" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.8rem; padding: 0.35rem 0.75rem; text-transform: uppercase;">{{ job['status'] }}</span>
+                </div>
+
+                <!-- Column 3: Actions -->
+                <div style="flex: 2; min-width: 300px; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center;">
+                    <button type="button" class="btn" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.5rem 1rem; font-weight: 600;" onclick="document.getElementById('dialog-employer-{{ job['id'] }}').showModal()" onmouseover="this.style.background='var(--primary-color)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--text-muted)';">View Listing</button>
+                    <a href="{{ url_for('employer.applicants', job_id=job['id']) }}" class="btn" style="background: var(--primary-color); color: white; padding: 0.5rem 1rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
+                        Applicants <span style="background: rgba(0,0,0,0.2); padding: 0.1rem 0.4rem; border-radius: 99px; font-size: 0.8rem;">{{ job['applicant_count'] }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Detail Dialog -->
+            <dialog id="dialog-employer-{{ job['id'] }}" class="modern-card fade-in" style="margin: auto; padding: 2.5rem; max-width: 800px; width: 90%; border: none; border-radius: 1rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3); background: var(--card-bg); color: var(--text-main);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                    <div>
+                        <h2 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">{{ job['title'] }}</h2>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">{{ job['status'] }}</span>
+                            {% if job['location'] %}<span class="badge" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.75rem;">📍 {{ job['location'] }}</span>{% endif %}
+                            {% if job['stipend'] %}<span class="badge" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.75rem;">💰 {{ job['stipend'] }}</span>{% endif %}
+                        </div>
+                    </div>
+                    <button type="button" onclick="document.getElementById('dialog-employer-{{ job['id'] }}').close()" style="background: var(--background); border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='var(--danger)'; this.style.color='white';">&times;</button>
+                </div>
+                
+                <h4 style="color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Published Description</h4>
+                <div style="background: rgba(0,0,0,0.05); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2.5rem; font-size: 0.95rem; border: 1px solid var(--border-color);">
+                    <p style="white-space: pre-wrap; line-height: 1.6; margin: 0; max-height: 300px; overflow-y: auto;">{{ job['description'] }}</p>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <form action="{{ url_for('employer.delete_job', job_id=job['id']) }}" method="POST" onsubmit="return confirm('Are you sure you want to completely delete this job listing? This action cannot be undone.');" style="margin: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn" style="background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 0.75rem 2rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 0.5rem;" onmouseover="this.style.background='var(--danger)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--danger)';">Delete Listing</button>
+                    </form>
+                    <a href="{{ url_for('employer.applicants', job_id=job['id']) }}" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 600;">Review Applicants &rarr;</a>
+                </div>
+            </dialog>
+            {% endfor %}
+        {% else %}
+            <div class="modern-card fade-in" style="text-align: center; padding: 4rem 2rem; background: transparent; border: 1px dashed var(--border-color);">
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 1.1rem;">You haven't posted any jobs yet.</p>
+                <a href="{{ url_for('employer.post_job') }}" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 600;">Post Your First Job</a>
+            </div>
+        {% endif %}
+        
+        {% if total_pages > 1 %}
+        <div class="pagination fade-in" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+            {% if page > 1 %}
+                <a href="{{ url_for('employer.dashboard', page=page-1) }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Previous</a>
+            {% endif %}
+            
+            <span class="btn" style="background: var(--background); color: var(--text-main); border: 1px solid var(--border-color); cursor: default;">Page {{ page }} of {{ total_pages }}</span>
+            
+            {% if page < total_pages %}
+                <a href="{{ url_for('employer.dashboard', page=page+1) }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    dialog::backdrop {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+    }
+</style>
+{% endblock %}

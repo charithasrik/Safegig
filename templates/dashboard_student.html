@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard - SafeGig{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <h2>Student Dashboard</h2>
+        <p style="color: var(--text-muted);">Welcome back! Manage your jobs and profile here.</p>
+    </div>
+    {% if not profile or not profile['resume_path'] %}
+        <div class="modern-banner">
+            <div>
+                <strong>Profile Incomplete!</strong><br>
+                <span style="color: var(--text-muted); font-size: 0.875rem;">Complete your profile to unlock applications</span>
+            </div>
+            <a href="{{ url_for('student.profile') }}" class="btn btn-primary" style="white-space: nowrap; margin-left: 1rem;">Complete Profile</a>
+        </div>
+    {% else %}
+        <a href="{{ url_for('student.profile') }}" class="btn btn-secondary">Edit Profile</a>
+    {% endif %}
+</div>
+
+<!-- AI Recommended Jobs -->
+{% if recommended_jobs %}
+<div class="dashboard-section" style="margin-bottom: 3rem;">
+    <h3 style="color: var(--secondary-color); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.25rem;">✨</span> AI Recommended Jobs
+    </h3>
+    <div class="list-container">
+        {% for job in recommended_jobs %}
+        <div class="job-row modern-card fade-in" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; margin-bottom: 1rem; border-left: 4px solid var(--secondary-color); flex-wrap: wrap; gap: 1rem; background: var(--background);">
+            <div style="flex: 2; min-width: 250px; display: flex; align-items: center; gap: 1rem;">
+                <span class="badge badge-gradient" style="white-space: nowrap;">{{ job['match_score'] }} Match</span>
+                <div>
+                    <h4 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: var(--text-main);">{{ job['title'] }}</h4>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                        <a href="{{ url_for('public.view_employer', employer_id=job['employer_id']) }}" style="color: var(--secondary-color); text-decoration: none; font-weight: 500;">{{ job['company_name'] }}</a>
+                        {% if 'location' in job.keys() and job['location'] %} • 📍 {{ job['location'] }}{% endif %}
+                        {% if 'stipend' in job.keys() and job['stipend'] %} • 💰 {{ job['stipend'] }}{% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <div style="flex: 1; text-align: right; min-width: 200px; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <form action="{{ url_for('student.save_job', job_id=job['id']) }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1.5rem;">Save</button>
+                </form>
+                {% if job['id'] in applied_job_ids %}
+                    <button class="btn btn-secondary" disabled style="opacity: 0.7; cursor: not-allowed; padding: 0.5rem 1.5rem;">Applied</button>
+                {% else %}
+                    <a href="{{ url_for('student.job_detail', job_id=job['id']) }}" class="btn btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 99px;">View & Apply</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Available Jobs Section -->
+<div class="dashboard-section" style="margin-bottom: 3rem;">
+    <h3 style="color: var(--primary-color); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.5rem;">✦</span> Available Verified Jobs
+    </h3>
+    <div class="list-container">
+        {% if jobs %}
+            {% for job in jobs %}
+            <div class="job-row modern-card fade-in" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; margin-bottom: 1rem; border-left: 4px solid var(--primary-color); flex-wrap: wrap; gap: 1rem; background: var(--background);">
+                <div style="flex: 2; min-width: 250px;">
+                    <h4 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: var(--text-main);">{{ job['title'] }}</h4>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                        <a href="{{ url_for('public.view_employer', employer_id=job['employer_id']) }}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">{{ job['company_name'] }}</a>
+                        {% if 'location' in job.keys() and job['location'] %} • 📍 {{ job['location'] }}{% endif %}
+                        {% if 'stipend' in job.keys() and job['stipend'] %} • 💰 {{ job['stipend'] }}{% endif %}
+                    </p>
+                </div>
+                
+                <div style="flex: 1; text-align: right; min-width: 200px; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <form action="{{ url_for('student.save_job', job_id=job['id']) }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1.5rem;">Save</button>
+                    </form>
+                    {% if job['id'] in applied_job_ids %}
+                        <button class="btn btn-secondary" disabled style="opacity: 0.7; cursor: not-allowed; padding: 0.5rem 1.5rem;">Applied</button>
+                    {% else %}
+                        <a href="{{ url_for('student.job_detail', job_id=job['id']) }}" class="btn btn-primary" style="padding: 0.5rem 1.5rem; border-radius: 99px;">View & Apply</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if total_pages > 1 %}
+            <div class="pagination" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+                {% if page > 1 %}
+                    <a href="{{ url_for('student.dashboard', page=page-1) }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Previous</a>
+                {% endif %}
+                
+                <span class="btn" style="background: var(--background); color: var(--text-main); border: 1px solid var(--border-color); cursor: default;">Page {{ page }} of {{ total_pages }}</span>
+                
+                {% if page < total_pages %}
+                    <a href="{{ url_for('student.dashboard', page=page+1) }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Next</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem 2rem; border-radius: 1rem; border: 1px dashed var(--border-color);">
+                <p style="color: var(--text-muted); margin: 0;">No verified jobs available at the moment.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}
