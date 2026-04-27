@@ -43,23 +43,6 @@ def verify_job(job_id):
     flash(f"Job {new_status}.", 'success')
     return redirect(url_for('admin.dashboard'))
 
-@bp.route('/articles', methods=['GET', 'POST'])
-@login_required
-def manage_articles():
-    db = get_db()
-    if request.method == 'POST':
-        title = request.form['title']
-        content = request.form['content']
-        category = request.form['category']
-        
-        db.execute("INSERT INTO articles (title, content, category) VALUES (?, ?, ?)", (title, content, category))
-        db.commit()
-        flash('Article published.', 'success')
-        return redirect(url_for('admin.manage_articles'))
-        
-    articles = db.execute("SELECT * FROM articles ORDER BY created_at DESC").fetchall()
-    return render_template('admin_articles.html', articles=articles)
-
 @bp.route('/users')
 @login_required
 def view_users():
@@ -68,14 +51,14 @@ def view_users():
         SELECT u.id, u.username, u.email, u.created_at, sp.education, sp.skills 
         FROM users u 
         LEFT JOIN student_profiles sp ON u.id = sp.user_id 
-        WHERE u.role = "student" ORDER BY u.created_at DESC
+        WHERE u.role = 'student' ORDER BY u.created_at DESC
     ''').fetchall()
     
     employers = db.execute('''
         SELECT u.id, u.username, u.email, u.created_at, e.company_name 
         FROM users u 
         LEFT JOIN employers e ON u.id = e.user_id 
-        WHERE u.role = "employer" ORDER BY u.created_at DESC
+        WHERE u.role = 'employer' ORDER BY u.created_at DESC
     ''').fetchall()
     
     return render_template('admin_users.html', students=students, employers=employers)

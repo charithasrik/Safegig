@@ -21,9 +21,7 @@
         <div class="nav-container">
             <a href="{{ url_for('public.index') }}" class="nav-logo">SafeGig</a>
             <div class="nav-links">
-                {% if not current_user.is_authenticated or current_user.role == 'student' or current_user.role == 'admin' %}
-                <a href="{{ url_for('public.articles') }}" class="nav-link" style="margin-right: 1rem;">Educational Hub</a>
-                {% endif %}
+
                 {% if current_user.is_authenticated %}
                     <span class="nav-user" style="margin-right: 1rem;">Hello, {{ current_user.username }}</span>
                     <a href="{{ url_for(current_user.role + '.dashboard') }}" class="nav-link">Dashboard</a>
@@ -37,7 +35,7 @@
                     {% if current_user.role == 'admin' %}
                     <a href="{{ url_for('admin.view_users') }}" class="nav-link" style="margin-right: 1rem;">All Users</a>
                     <a href="{{ url_for('admin.view_applications') }}" class="nav-link" style="margin-right: 1rem;">All Applications</a>
-                    <a href="{{ url_for('admin.manage_articles') }}" class="nav-link" style="margin-right: 1rem;">Manage Articles</a>
+
                     {% endif %}
                     <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Logout</a>
                 {% else %}

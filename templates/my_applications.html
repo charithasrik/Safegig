@@ -2,54 +2,231 @@
 {% block title %}My Applications - SafeGig{% endblock %}
 
 {% block content %}
-<div class="dashboard-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
-    <div>
-        <h2>My Applications</h2>
-        <a href="{{ url_for('student.dashboard') }}" style="color: var(--primary-color); text-decoration: none;">&larr; Back to Dashboard</a>
-    </div>
+<style>
+    .applications-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .applications-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(135deg, var(--primary-color), #8B5CF6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+    .back-link:hover {
+        color: var(--primary-color);
+    }
+    
+    .app-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .app-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-color);
+    }
+
+    .app-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .app-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .job-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+        color: var(--text-main);
+    }
+    
+    .company-name {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .company-name:hover {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .status-applied { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+    .status-reviewed { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+    .status-accepted { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+    .status-rejected { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+    .app-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .app-details {
+        background: var(--background);
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+    
+    .detail-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    
+    .detail-value {
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
+    
+    .detail-full {
+        grid-column: 1 / -1;
+    }
+    
+    .app-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .btn-view {
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-view:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px dashed var(--border-color);
+    }
+    .empty-state h3 { margin-bottom: 0.5rem; }
+    .empty-state p { color: var(--text-muted); margin-bottom: 1.5rem; }
+</style>
+
+<div class="applications-header">
+    <h2>My Applications</h2>
+    <a href="{{ url_for('student.dashboard') }}" class="back-link">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Back to Dashboard
+    </a>
 </div>
 
-<div class="card-grid" style="display: grid; gap: 1.5rem; margin-bottom: 3rem;">
+<div style="display: grid; gap: 1.5rem; margin-bottom: 3rem;">
     {% if applications %}
         {% for app in applications %}
-        <div class="job-card" style="background: var(--card-bg); padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid var(--primary-color);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div class="app-card">
+            <div class="app-card-header">
                 <div>
-                    <h3 style="margin-bottom: 0.25rem; font-size: 1.25rem;">{{ app['title'] }}</h3>
-                    <p style="color: var(--text-muted); font-size: 0.875rem;"><a href="{{ url_for('public.view_employer', employer_id=app['employer_id']) }}" style="color: var(--primary-color); text-decoration: none;">{{ app['company_name'] }}</a></p>
+                    <h3 class="job-title">{{ app['title'] }}</h3>
+                    <a href="{{ url_for('public.view_employer', employer_id=app['employer_id']) }}" class="company-name">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        {{ app['company_name'] }}
+                    </a>
                 </div>
                 <div style="text-align: right;">
-                    <span style="display: inline-block; background: var(--background); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; text-transform: capitalize; margin-bottom: 0.5rem;">Status: {{ app['status'] }}</span><br>
-                    <span style="font-size: 0.875rem; color: var(--text-muted);">Applied: {{ (app['application_date'] | string)[:10] }}</span>
+                    <span class="status-badge status-{{ app['status']|lower }}">{{ app['status'] }}</span>
+                    <div class="app-meta">Applied: {{ (app['application_date'] | string)[:10] }}</div>
                 </div>
             </div>
             
-            <div style="background: var(--background); padding: 1rem; border-radius: 0.5rem;">
-                <p style="font-size: 0.875rem; margin-bottom: 0.5rem;"><strong>Your Provided Details:</strong></p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.875rem;">
-                    <div>
-                        <p style="color: var(--text-muted); margin-bottom: 0.25rem;">Availability</p>
-                        <p>{{ app['availability'] or 'N/A' }}</p>
-                    </div>
-                    <div>
-                        <p style="color: var(--text-muted); margin-bottom: 0.25rem;">Start Date</p>
-                        <p>{{ app['start_date'] or 'N/A' }}</p>
-                    </div>
-                    <div style="grid-column: 1 / -1;">
-                        <p style="color: var(--text-muted); margin-bottom: 0.25rem;">Previous Experience</p>
-                        <p style="white-space: pre-wrap;">{{ app['previous_experience'] or 'None' }}</p>
-                    </div>
+            <div class="app-details">
+                <div class="detail-item">
+                    <span class="detail-label">Availability</span>
+                    <span class="detail-value">{{ app['availability'] or 'Not provided' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Start Date</span>
+                    <span class="detail-value">{{ app['start_date'] or 'Not provided' }}</span>
+                </div>
+                <div class="detail-item detail-full">
+                    <span class="detail-label">Previous Experience</span>
+                    <span class="detail-value" style="white-space: pre-wrap; font-style: italic;">{{ app['previous_experience'] or 'None provided.' }}</span>
                 </div>
             </div>
             
-            <div style="margin-top: 1.5rem;">
-                <a href="{{ url_for('student.job_detail', job_id=app['job_id']) }}" class="btn btn-secondary" style="font-size: 0.875rem;">View Original Job Posting</a>
+            <div class="app-actions">
+                <a href="{{ url_for('student.job_detail', job_id=app['job_id']) }}" class="btn-view">View Job Posting</a>
             </div>
         </div>
         {% endfor %}
     {% else %}
-        <div style="text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 1rem; grid-column: 1 / -1;">
-            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;">You haven't applied to any jobs yet.</p>
+        <div class="empty-state">
+            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; color: var(--border-color);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <h3>No Applications Yet</h3>
+            <p>You haven't applied to any jobs. Start exploring opportunities!</p>
             <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Browse Jobs</a>
         </div>
     {% endif %}
